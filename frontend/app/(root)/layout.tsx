@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import Provider from "@components/Provider";
 import { Session } from "next-auth";
+import { Inter } from "next/font/google";
+import TopBar from "@components/TopBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -19,19 +21,22 @@ export const metadata: Metadata = {
   description: "A chat app built with Next.js ",
 };
 
+const inter = Inter({ subsets: ["latin"] });
+
 export default function RootLayout({
   children,
-  session
+  session,
 }: Readonly<{
   children: React.ReactNode;
   session: Session | null;
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Provider session={session}>{children}</Provider>
+       <body className={`${inter.className} bg-blue-2`}>
+        <Provider session={session}>
+          <TopBar />
+          {children}
+        </Provider>
       </body>
     </html>
   );
