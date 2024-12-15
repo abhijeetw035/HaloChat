@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import Loader from "./Loader";
 import { useSession } from "@node_modules/next-auth/react";
-import { RadioButtonUnchecked } from "@node_modules/@mui/icons-material";
+import {
+  CheckCircle,
+  RadioButtonUnchecked,
+} from "@node_modules/@mui/icons-material";
+import { useRouter } from "@node_modules/next/navigation";
 
 interface User {
   _id: string;
@@ -21,8 +25,10 @@ const Contacts = () => {
 
   const getContacts = async () => {
     try {
-    const query = search;
-      const res = await fetch(search !== "" ? `/api/users/searchContact/${query}` : "/api/users");
+      const query = search;
+      const res = await fetch(
+        search !== "" ? `/api/users/searchContact/${query}` : "/api/users"
+      );
       const data = await res.json();
       setContacts(data.filter((user: any) => user._id !== currentUser?.id));
       setLoading(false);
@@ -35,6 +41,48 @@ const Contacts = () => {
     if (currentUser) getContacts();
     console.log(contacts);
   }, [currentUser, search]);
+
+  // select contact
+  const [selectedContacts, setSelectedContacts] = useState<User[]>([]);
+  const isGroup = selectedContacts.length > 1;
+
+  const handleSelect = (contact: User) => {
+    if (selectedContacts.includes(contact)) {
+      setSelectedContacts((prevSelectedContacts) =>
+        prevSelectedContacts.filter((item) => item !== contact)
+      );
+    } else {
+      setSelectedContacts((prevSelectedContacts) => [
+        ...prevSelectedContacts,
+        contact,
+      ]);
+    }
+  };
+
+  // add group chat name
+  const [name, setName] = useState("");
+
+  // console.log(selectedContacts);
+  const router = useRouter();
+
+  // create chat
+  const createChat = async () => {
+    const res = await fetch("/api/chats", {
+      method: "POST",
+      body: JSON.stringify({
+        currentUserId: currentUser?.id,
+        members: selectedContacts.map((contact) => contact._id),
+        isGroup,
+        name,
+      }),
+    });
+
+    const chat = await res.json();
+
+    if (res.ok) {
+      router.push(`/chats/${chat._id}`);
+    }
+  };
 
   return loading ? (
     <Loader />
@@ -53,8 +101,16 @@ const Contacts = () => {
 
           <div className="flex flex-col flex-1 gap-5 overflow-y-scroll custom-scrollbar">
             {contacts.map((user, index) => (
-              <div key={index} className="contact">
-                <RadioButtonUnchecked />
+              <div
+                key={index}
+                className="contact"
+                onClick={() => handleSelect(user)}
+              >
+                {selectedContacts.find((item) => item === user) ? (
+                  <CheckCircle sx={{ color: "red" }} />
+                ) : (
+                  <RadioButtonUnchecked />
+                )}
                 <img
                   src={user.profileImage || "/assets/person.jpg"}
                   alt="profile"
@@ -67,7 +123,31 @@ const Contacts = () => {
         </div>
 
         <div className="create-chat">
-          <button className="btn">START A NEW CHAT</button>
+          {isGroup && (
+            <>
+              <div className="flex flex-col gap-3">
+                <p className="text-body-bold">Group Chat Name</p>
+                <input
+                  placeholder="Enter group chat name..."
+                  className="input-group-name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <p className="text-body-bold">Members</p>
+                <div className="flex flex-wrap gap-3">
+                  {selectedContacts.map((contact, index) => (
+                    <p className="selected-contact" key={index}>
+                      {contact.username}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          <button className="btn" onClick={createChat}>START A NEW CHAT</button>
         </div>
       </div>
     </div>
