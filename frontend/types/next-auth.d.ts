@@ -11,11 +11,11 @@ declare module "next-auth" {
       profileImage?: string | null;
     };
   }
-
+  
   interface User {
     id: string;
   }
-
+  
   interface Member {
     _id: string;
     email: string;
@@ -23,7 +23,7 @@ declare module "next-auth" {
     profileImage: string;
     username: string;
   }
-
+  
   interface Chat {
     _id: string;
     isGroup: boolean;
@@ -33,6 +33,7 @@ declare module "next-auth" {
     messages: any[];
     lastMessageAt: string;
     createdAt: string;
+    profileImage?: string | null; 
   }
   
 }

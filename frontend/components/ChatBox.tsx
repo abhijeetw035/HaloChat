@@ -7,9 +7,14 @@ interface ChatBoxProps {
   chat: Chat; // Replace `any` with the proper type if known.
   currentUser?: User; // Replace `any` with a specific type if available.
   index: number;
+  currentChatId: string;
 }
 
-const ChatBox: React.FC<ChatBoxProps> = ({ chat, currentUser }) => {
+const ChatBox: React.FC<ChatBoxProps> = ({
+  chat,
+  currentUser,
+  currentChatId,
+}) => {
   const router = useRouter();
   const otherMembers = chat?.members?.filter(
     (member: Member) => member._id !== currentUser?.id
@@ -23,7 +28,10 @@ const ChatBox: React.FC<ChatBoxProps> = ({ chat, currentUser }) => {
   );
 
   return (
-    <div className="chat-box" onClick={() => router.push(`/chats/${chat?._id}`)}>
+    <div
+      className={`chat-box ${chat._id === currentChatId ? "bg-blue-2" : ""}`}
+      onClick={() => router.push(`/chats/${chat?._id}`)}
+    >
       <div className="chat-info">
         {chat?.isGroup ? (
           <img

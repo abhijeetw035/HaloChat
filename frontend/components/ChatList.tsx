@@ -5,7 +5,11 @@ import Loader from "./Loader";
 import { useSession } from "@node_modules/next-auth/react";
 import ChatBox from "./ChatBox";
 
-const ChatList = () => {
+interface ChatListProps {
+  currentChatId: string;
+}
+
+const ChatList: React.FC<ChatListProps> = ({currentChatId }) => {
   const [loading, setLoading] = useState(true);
   const { data: sessions } = useSession();
   const currentUser = sessions?.user;
@@ -56,7 +60,7 @@ const ChatList = () => {
             index={index}
             chat={chat}
             currentUser={currentUser}
-            // currentChatId={currentChatId}
+            currentChatId={currentChatId}
           />
         ))}
       </div>
