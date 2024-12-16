@@ -15,4 +15,24 @@ declare module "next-auth" {
   interface User {
     id: string;
   }
+
+  interface Member {
+    _id: string;
+    email: string;
+    password: string;
+    profileImage: string;
+    username: string;
+  }
+
+  interface Chat {
+    _id: string;
+    isGroup: boolean;
+    groupPhoto: string;
+    members: Member[];
+    name: string;
+    messages: any[];
+    lastMessageAt: string;
+    createdAt: string;
+  }
+  
 }
