@@ -1,9 +1,11 @@
 "use client";
+
 import { useSession } from "@node_modules/next-auth/react";
 import { Chat, Member } from "next-auth";
 import React, { useEffect, useState } from "react";
 import Loader from "./Loader";
 import Link from "@node_modules/next/link";
+import { AddPhotoAlternate } from "@node_modules/@mui/icons-material";
 
 interface ChatDetailsProp {
   chatId: string;
@@ -84,10 +86,32 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
           )}
         </div>
 
-        <div className="chat-body">
-        
+        <div className="chat-body">{/* Chats */}</div>
+
+        <div className="send-message">
+          <div className="prepare-message">
+            <AddPhotoAlternate
+              sx={{
+                fontSize: "35px",
+                color: "#737373",
+                cursor: "pointer",
+                "&:hover": { color: "red" },
+              }}
+            />
+            <input
+              type="text"
+              placeholder="Write a message..."
+              className="input-field"
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <img src="/assets/send.jpg" alt="send" className="send-icon" />
+          </div>
         </div>
-        
       </div>
     </div>
   );
