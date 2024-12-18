@@ -56,9 +56,27 @@ const ChatBox: React.FC<ChatBoxProps> = ({
 
           {!lastMessage && <p className="text-small-bold">Started a chat</p>}
 
-          {/* {lastMessage?.photo && (
-            
-          )} */}
+          {lastMessage?.photo ? (
+            lastMessage?.sender?._id === currentUser?.id ? (
+              <p className="text-small-medium text-grey-3">You sent a photo</p>
+            ) : (
+              <p
+                className={`${
+                  seen ? "text-small-medium text-grey-3" : "text-small-bold"
+                }`}
+              >
+                Received a photo
+              </p>
+            )
+          ) : (
+            <p
+              className={`last-message ${
+                seen ? "text-small-medium text-grey-3" : "text-small-bold"
+              }`}
+            >
+              {lastMessage?.text}
+            </p>
+          )}
         </div>
 
         <div>

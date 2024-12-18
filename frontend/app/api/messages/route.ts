@@ -36,7 +36,7 @@ export const POST = async (req: Request) => {
       .populate({
         path: "messages",
         model: Message,
-        populate: { path: "sender seenBy", model: "User" },
+        populate: { path: "sender seenBy", model: User },
       })
       .populate({
         path: "members",
