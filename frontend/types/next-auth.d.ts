@@ -35,5 +35,14 @@ declare module "next-auth" {
     createdAt: string;
     profileImage?: string | null; 
   }
-  
+
+  interface Message {
+    _id: string;
+    chat: string;
+    sender: string;
+    text: string;
+    photo: string;
+    createdAt: string;
+    seenBy: string[]; 
+  }
 }
