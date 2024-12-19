@@ -12,6 +12,26 @@ const ChatPage = () => {
   const { data: session } = useSession();
   const currentUser = session?.user;
 
+  const seenMessages = async () => {
+    try {
+      await fetch (`/api/chats/${chatId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          currentUserId: currentUser?.id
+        })
+      })
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  useEffect(() => {
+    if (currentUser && chatId) seenMessages()
+  }, [currentUser, chatId])
+
   return (
     <div className="main-container">
       <div className="w-1/3 max-lg:hidden">
