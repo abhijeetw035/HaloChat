@@ -1,3 +1,4 @@
+import { pusherServer } from "@lib/pusher";
 import Chat from "@models/Chat";
 import Message from "@models/Message";
 import User from "@models/User";
@@ -44,7 +45,23 @@ export const POST = async (req: Request) => {
       })
       .exec();
 
-    return NextResponse.json(updatedChat, { status: 200 });
+       /* Trigger a Pusher event for a specific chat about the new message */
+      await pusherServer.trigger(chatId, "new-message", newMessage);
+
+      /* Triggers a Pusher event for each member of the chat about the chat update with the latest message */
+      const lastMessage = updatedChat.messages[updatedChat.messages.length - 1];
+      updatedChat.members.forEach(async (member : any) => {
+        try {
+          await pusherServer.trigger(member._id.toString(), "update-chat", {
+            id: chatId,
+            messages: [lastMessage]
+          });
+        } catch (err) {
+          console.error(`Failed to trigger update-chat event`);
+        }
+      });
+
+    return NextResponse.json(newMessage, { status: 200 });
   } catch (error) {
     console.log(error);
     return new Response("Failed to create new message", { status: 500 });

@@ -2,12 +2,13 @@
 
 import { useSession } from "@node_modules/next-auth/react";
 import { Chat, Member } from "next-auth";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Loader from "./Loader";
 import Link from "@node_modules/next/link";
 import { AddPhotoAlternate } from "@node_modules/@mui/icons-material";
 import { CldUploadButton } from "@node_modules/next-cloudinary/dist";
 import MessageBox from "./MessageBox";
+import { pusherClient } from "@lib/pusher";
 
 interface ChatDetailsProp {
   chatId: string;
@@ -77,7 +78,9 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
 
   const sendPhoto = async (result: any, currentUserId: string | undefined) => {
     if (!currentUserId) {
-      console.error("User ID is undefined. Please ensure the user is authenticated.");
+      console.error(
+        "User ID is undefined. Please ensure the user is authenticated."
+      );
       return;
     }
 
@@ -95,13 +98,42 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
         }),
       });
 
-      if(res.ok) {
-        console.log("Photo Send")
+      if (res.ok) {
+        console.log("Photo Send");
       }
     } catch (err) {
       console.log(err);
     }
   };
+
+  useEffect(() => {
+    pusherClient.subscribe(chatId);
+
+    const handleMessage = async (newMessage: any) => {
+      // newMessage is data received from the backend
+      setChat((prevChat: any) => {
+        return {
+          ...prevChat,
+          messages: [...prevChat?.messages, newMessage],
+        };
+      });
+    };
+
+    pusherClient.bind("new-message", handleMessage);
+
+    return () => {
+      pusherClient.unsubscribe(chatId);
+      pusherClient.unbind("new-message", handleMessage);
+    };
+  }, [chatId]);
+
+  // scrolling down to the new message after the new message comes
+
+  const bottomRef = useRef(null);
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chat?.messages])
 
   return loading ? (
     <Loader />
@@ -141,14 +173,14 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
         </div>
 
         <div className="chat-body">
-        {chat?.messages?.map((message, index) => (
+          {chat?.messages?.map((message, index) => (
             <MessageBox
               key={index}
               message={message}
               currentUser={currentUser}
             />
           ))}
-          {/* <div ref={bottomRef} /> */}
+          <div ref={bottomRef} />
         </div>
 
         <div className="send-message">

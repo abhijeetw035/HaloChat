@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Loader from "./Loader";
 import { useSession } from "@node_modules/next-auth/react";
 import ChatBox from "./ChatBox";
+import { pusherClient } from "@lib/pusher";
 
 interface ChatListProps {
   currentChatId: string;
@@ -13,7 +14,8 @@ const ChatList: React.FC<ChatListProps> = ({currentChatId }) => {
   const [loading, setLoading] = useState(true);
   const { data: sessions } = useSession();
   const currentUser = sessions?.user;
-  const [chats, setChats] = useState([]);
+  const [chats, setChats] = useState<any>([]);
+
   const [search, setSearch] = useState("");
 
   const getAllChat = async () => {
@@ -42,6 +44,37 @@ const ChatList: React.FC<ChatListProps> = ({currentChatId }) => {
 
   console.log(chats);
 
+  useEffect(() => {
+    if (currentUser) {
+      pusherClient.subscribe(currentUser?.id);
+
+      const handleChatUpdate = (updatedChat : any) => { // data from backend
+        setChats((allChats : any) =>
+          allChats.map((chat : any) => {
+            if (chat._id === updatedChat.id) {
+              return { ...chat, messages: updatedChat.messages };
+            } else {
+              return chat;
+            }
+          })
+        );
+      };
+
+      const handleNewChat = (newChat : any) => {
+        setChats((allChats : any) => [...allChats, newChat]);
+      }
+
+      pusherClient.bind("update-chat", handleChatUpdate);
+      pusherClient.bind("new-chat", handleNewChat);
+
+      return () => {
+        pusherClient.unsubscribe(currentUser?.id);
+        pusherClient.unbind("update-chat", handleChatUpdate);
+        pusherClient.unbind("new-chat", handleNewChat);
+      };
+    }
+  }, [currentUser])
+
   return loading ? (
     <Loader />
   ) : (
@@ -54,7 +87,7 @@ const ChatList: React.FC<ChatListProps> = ({currentChatId }) => {
       />
 
       <div className="chats">
-        {chats?.map((chat, index) => (
+        {chats?.map((chat:any, index:any) => (
           <ChatBox
             key={index}
             index={index}
