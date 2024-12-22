@@ -7,7 +7,7 @@ import { Session } from 'next-auth';
 
 type ProviderProps = {
   children: ReactNode;
-  session: Session | null;
+  session: Session | null | undefined;
 };
 
 const Provider = ({ children, session }: ProviderProps) => {
