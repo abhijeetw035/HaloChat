@@ -5,6 +5,7 @@ import Provider from "@components/Provider";
 import { Session } from "next-auth";
 import { Inter } from "next/font/google";
 import TopBar from "@components/TopBar";
+import BottomBar from "@components/BottomBar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
         <Provider session={session}>
           <TopBar />
           {children}
+          <BottomBar />
         </Provider>
       </body>
     </html>
