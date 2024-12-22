@@ -7,16 +7,6 @@ import { Inter } from "next/font/google";
 import TopBar from "@components/TopBar";
 import BottomBar from "@components/BottomBar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
   title: "Halo Chat App",
   description: "A chat app built with Next.js ",
@@ -29,7 +19,7 @@ export default function RootLayout({
   session,
 }: Readonly<{
   children: React.ReactNode;
-  session: Session | null;
+  session: Session;
 }>) {
   return (
     <html lang="en">
