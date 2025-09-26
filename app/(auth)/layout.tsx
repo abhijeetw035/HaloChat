@@ -2,7 +2,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import ToasterContext from "@components/ToasterContext";
 import Provider from "@components/Provider";
-import { Session } from "next-auth";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,17 +15,15 @@ const geistMono = Geist_Mono({
 
 export default function RootLayout({
   children,
-  session
 }: Readonly<{
   children: React.ReactNode;
-  session: Session;
 }>) {
   return (
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-purple-1`}
       >
-        <Provider session={session}>
+        <Provider>
           <ToasterContext />
           {children}
         </Provider>
