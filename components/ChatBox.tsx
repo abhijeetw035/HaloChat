@@ -41,7 +41,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           />
         ) : (
           <img
-            src={otherMembers[0].profileImage || "/assets/person.jpg"}
+            src={otherMembers?.[0]?.profileImage || "/assets/person.jpg"}
             alt="profile-photo"
             className="profilePhoto"
           />
@@ -51,7 +51,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({
           {chat?.isGroup ? (
             <p className="text-base-bold">{chat?.name}</p>
           ) : (
-            <p className="text-base-bold">{otherMembers[0]?.username}</p>
+            <p className="text-base-bold">{otherMembers?.[0]?.username || "Unknown User"}</p>
           )}
 
           {!lastMessage && <p className="text-small-bold">Started a chat</p>}

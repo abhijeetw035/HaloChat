@@ -18,6 +18,7 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
   const [loading, setLoading] = useState(true);
   const [chat, setChat] = useState<Chat>();
   const [otherMembers, setOtherMembers] = useState<Member[]>([]);
+  const [isSending, setIsSending] = useState(false);
 
   const { data: session } = useSession();
   const currentUser = session?.user;
@@ -51,10 +52,15 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
       getChatDetails();
     }
     setLoading(false);
-    console.log(chat);
   }, [currentUser, chatId]);
 
   const sendText = async () => {
+    if (!text.trim() || isSending) return;
+    
+    const messageText = text.trim();
+    setText("");
+    setIsSending(true);
+    
     try {
       const res = await fetch("/api/messages", {
         method: "POST",
@@ -64,25 +70,31 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
         body: JSON.stringify({
           chatId,
           currentUserId: currentUser?.id,
-          text,
+          text: messageText,
         }),
       });
 
-      if (res.ok) {
-        setText("");
+      if (!res.ok) {
+        setText(messageText);
+        console.error("Failed to send message");
       }
     } catch (error) {
+      setText(messageText);
       console.log(error);
+    } finally {
+      setIsSending(false);
     }
   };
 
   const sendPhoto = async (result: any, currentUserId: string | undefined) => {
-    if (!currentUserId) {
+    if (!currentUserId || isSending) {
       console.error(
         "User ID is undefined. Please ensure the user is authenticated."
       );
       return;
     }
+
+    setIsSending(true);
 
     try {
       const res = await fetch("/api/messages", {
@@ -103,6 +115,8 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
       }
     } catch (err) {
       console.log(err);
+    } finally {
+      setIsSending(false);
     }
   };
 
@@ -110,11 +124,21 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
     pusherClient.subscribe(chatId);
 
     const handleMessage = async (newMessage: any) => {
-      // newMessage is data received from the backend
+      console.log("Received new message via Pusher:", newMessage);
       setChat((prevChat: any) => {
+        if (!prevChat) return prevChat;
+        
+        const messageExists = prevChat.messages?.some(
+          (msg: any) => msg._id === newMessage._id
+        );
+        
+        if (messageExists) {
+          return prevChat;
+        }
+        
         return {
           ...prevChat,
-          messages: [...prevChat?.messages, newMessage],
+          messages: [...(prevChat?.messages || []), newMessage],
         };
       });
     };
@@ -127,9 +151,7 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
     };
   }, [chatId]);
 
-  // scrolling down to the new message after the new message comes
-
-  const bottomRef = useRef(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -161,12 +183,12 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
           ) : (
             <>
               <img
-                src={otherMembers[0]?.profileImage || "/assets/person.jpg"}
+                src={otherMembers?.[0]?.profileImage || "/assets/person.jpg"}
                 alt="profile photo"
                 className="profilePhoto"
               />
               <div className="text">
-                <p>{otherMembers[0]?.username}</p>
+                <p>{otherMembers?.[0]?.username || "Unknown User"}</p>
               </div>
             </>
           )}
@@ -175,7 +197,7 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
         <div className="chat-body">
           {chat?.messages?.map((message, index) => (
             <MessageBox
-              key={index}
+              key={message._id || index}
               message={message}
               currentUser={currentUser}
             />
@@ -188,8 +210,6 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
             <CldUploadButton
               options={{ maxFiles: 1 }}
               onSuccess={(result) => {
-                console.log("Session:", session);
-                console.log("Current User ID:", currentUser?.id);
                 sendPhoto(result, currentUser?.id);
               }}
               uploadPreset="halochat123"
@@ -209,11 +229,24 @@ const ChatDetails: React.FC<ChatDetailsProp> = ({ chatId }) => {
               className="input-field"
               value={text}
               onChange={(e) => setText(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && text.trim() && !isSending) {
+                  e.preventDefault();
+                  sendText();
+                }
+              }}
+              disabled={isSending}
               required
             />
           </div>
 
-          <div onClick={sendText}>
+          <div 
+            onClick={sendText}
+            style={{ 
+              opacity: (text.trim() && !isSending) ? 1 : 0.5, 
+              cursor: (text.trim() && !isSending) ? 'pointer' : 'not-allowed' 
+            }}
+          >
             <img src="/assets/send.jpg" alt="send" className="send-icon" />
           </div>
         </div>

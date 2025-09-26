@@ -11,7 +11,7 @@ export const POST = async (req: Request) => {
 
     const body = await req.json();
     const { chatId, currentUserId, text, photo } = body;
-    console.log(chatId, currentUserId, text, photo);
+    
     const currentUser = await User.findById(currentUserId);
 
     if (!currentUser) {
@@ -25,6 +25,13 @@ export const POST = async (req: Request) => {
       photo,
       seenBy: currentUserId,
     });
+
+    const populatedMessage = await Message.findById(newMessage._id)
+      .populate({
+        path: "sender seenBy",
+        model: User,
+      })
+      .exec();
 
     const updatedChat = await Chat.findByIdAndUpdate(
       chatId,
@@ -45,10 +52,8 @@ export const POST = async (req: Request) => {
       })
       .exec();
 
-       /* Trigger a Pusher event for a specific chat about the new message */
-      await pusherServer.trigger(chatId, "new-message", newMessage);
+      await pusherServer.trigger(chatId, "new-message", populatedMessage);
 
-      /* Triggers a Pusher event for each member of the chat about the chat update with the latest message */
       const lastMessage = updatedChat.messages[updatedChat.messages.length - 1];
       updatedChat.members.forEach(async (member : any) => {
         try {
@@ -61,7 +66,7 @@ export const POST = async (req: Request) => {
         }
       });
 
-    return NextResponse.json(newMessage, { status: 200 });
+    return NextResponse.json(populatedMessage, { status: 200 });
   } catch (error) {
     console.log(error);
     return new Response("Failed to create new message", { status: 500 });
