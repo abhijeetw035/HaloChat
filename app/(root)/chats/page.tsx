@@ -1,16 +1,15 @@
 import ChatList from "@components/ChatList";
 import Contacts from "@components/Contacts";
-import { useSession } from "@node_modules/next-auth/react";
 import React from "react";
 
 const page = () => {
   return (
     <div className="main-container">
       <div className="w-1/3 max-lg:w-1/2 max-md:w-full">
-      <ChatList />
+        <ChatList currentChatId="" />
       </div>
       <div className="w-2/3 max-lg:w-1/2 max-md:hidden">
-      <Contacts />
+        <Contacts />
       </div>
     </div>
   );
