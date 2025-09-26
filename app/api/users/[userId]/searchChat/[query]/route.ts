@@ -3,11 +3,13 @@ import User from "@models/User";
 import { connectToDB } from "@mongodb"
 import { NextResponse } from "@node_modules/next/server";
 
-export const GET = async (req: Request, context: { params: {userId: string, query: string} }) => {
+export const GET = async (
+  req: Request, 
+  { params }: { params: Promise<{userId: string, query: string}> }
+) => {
     try {
         await connectToDB();
 
-        const { params } = context;
         const { userId, query } = await params;
 
         const searchedChat = await Chat.find({

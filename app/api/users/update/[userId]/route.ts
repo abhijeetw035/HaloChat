@@ -2,11 +2,13 @@ import User from "@models/User";
 import { connectToDB } from "@mongodb";
 import { NextResponse } from "@node_modules/next/server";
 
-export const POST = async (req: Request, context: { params: { userId: string } }) => {
+export const POST = async (
+  req: Request, 
+  { params }: { params: Promise<{ userId: string }> }
+) => {
   try {
     await connectToDB();
 
-    const { params } = context; // Await params to access userId correctly
     const { userId } = await params;
     console.log("Received userId:", userId);
 

@@ -4,7 +4,7 @@ import { NextResponse } from "@node_modules/next/server";
 
 export const GET = async (
   req: Request,
-  { params }: { params: { query: string } }
+  { params }: { params: Promise<{ query: string }> }
 ) => {
     try {
         await connectToDB();

@@ -6,13 +6,16 @@ import { NextResponse } from "@node_modules/next/server";
 
 export const GET = async (
   req: Request,
-  context: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) => {
   try {
     await connectToDB();
 
-    const { params } = context; // Await params to access userId correctly
     const { userId } = await params;
+
+    if (!userId) {
+      return NextResponse.json("User ID is required", { status: 400 });
+    }
 
     const allChats = await Chat.find({ members: userId })
       .sort({
@@ -34,7 +37,7 @@ export const GET = async (
 
     return NextResponse.json(allChats, { status: 200 });
   } catch (error) {
-    console.log(error);
+    console.error("Error in GET /api/users/[userId]:", error);
     return NextResponse.json("Failed to get all chats of current user!", {
       status: 500,
     });

@@ -6,12 +6,11 @@ import { NextResponse } from "@node_modules/next/server";
 
 export const GET = async (
   req: Request,
-  context: { params: { chatId: string } }
+  { params }: { params: Promise<{ chatId: string }> }
 ) => {
   try {
     await connectToDB();
 
-    const { params } = context;
     const { chatId } = await params;
 
     const chat = await Chat.findById(chatId)
@@ -38,12 +37,11 @@ export const GET = async (
 
 export const POST = async (
   req: Request,
-  context: { params: { chatId: string } }
+  { params }: { params: Promise<{ chatId: string }> }
 ) => {
   try {
     await connectToDB();
 
-    const { params } = context;
     const { chatId } = await params;
 
     const body = await req.json();
